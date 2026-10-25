@@ -13,7 +13,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #111e38;
+      background: #101d36;
     }
     #widgetContainer {
       width: 100%;
@@ -21,16 +21,16 @@
       position: relative;
       overflow: hidden;
     }
+    /* Passt Höhe, Breite und Zoomfaktor so an, dass auch die unteren Temperaturwerte sichtbar sind */
     #wetterFrame {
-      width: 460px;
-      height: 420px;
+      width: 480px;
+      height: 560px;
       border: none;
       position: absolute;
       top: 0;
       left: 0;
       transform-origin: top left;
-      transform: scale(calc(100vw / 460));
-      overflow: hidden;
+      transform: scale(calc(100vw / 480));
     }
     #alertFrame {
       display: none;
@@ -42,16 +42,20 @@
 </head>
 <body>
   <div id="widgetContainer">
-    <iframe id="wetterFrame" src="https://www.meteoblue.com/de/wetter/widget/three/uplengen_deutschland_2821102?geoloc=fixed&nocurrent=0&noforecast=0&days=3&tempunit=CELSIUS&windunit=KILOMETER_PER_HOUR&layout=dark" scrolling="no" frameborder="0"></iframe>
+    <!-- Feste Koordinaten für Uplengen (53.30N / 7.70E) ohne automatische IP-Standorterkennung -->
+    <iframe id="wetterFrame" src="https://www.meteoblue.com/de/wetter/widget/three?lat=53.30&lon=7.70&name=Uplengen&geoloc=fixed&nocurrent=0&noforecast=0&days=3&tempunit=CELSIUS&windunit=KILOMETER_PER_HOUR&layout=dark" scrolling="no" frameborder="0"></iframe>
   </div>
 
   <iframe id="alertFrame" src="about:blank"></iframe>
 
   <script>
-    // 1. Sturm/Wind-Karte
+    // Feste Meteoblue-URL mit Lat/Lon und erzwungenem Ortsnamen Uplengen
+    const urlMeteoblue = "https://www.meteoblue.com/de/wetter/widget/three?lat=53.30&lon=7.70&name=Uplengen&geoloc=fixed&nocurrent=0&noforecast=0&days=3&tempunit=CELSIUS&windunit=KILOMETER_PER_HOUR&layout=dark";
+    
+    // 1. Sturm/Wind-Karte (Windy)
     const urlWind = "https://embed.windy.com/embed2.html?lat=53.30&lon=7.70&detailLat=53.30&detailLon=7.70&zoom=9&level=surface&overlay=wind&product=iconEu&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&radarRange=-1";
     
-    // 2. Live Blitz- und Unwetter-Radar (Windy Weather Radar mit Live-Blitzen)
+    // 2. Blitz-/Unwetter-Radar (Windy Live-Blitze)
     const urlLightning = "https://embed.windy.com/embed2.html?lat=53.30&lon=7.70&detailLat=53.30&detailLon=7.70&zoom=9&level=surface&overlay=radar&product=radar&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&radarRange=-1";
 
     const warnCellId = "103457022"; // Uplengen
@@ -73,11 +77,9 @@
               const isLevel2OrHigher = level >= 2 || ["Moderate", "Severe", "Extreme"].includes(props.SEVERITY);
 
               if (isLevel2OrHigher) {
-                // Prüfen auf Gewitter / Blitzschlag
                 if (event.includes("gewitter") || event.includes("blitz") || event.includes("hagel") || event.includes("unwetter")) {
                   hasThunderAlert = true;
                 }
-                // Prüfen auf Wind / Sturm / Orkan
                 if (event.includes("wind") || event.includes("sturm") || event.includes("böen") || event.includes("orkan")) {
                   hasWindAlert = true;
                 }
@@ -89,7 +91,6 @@
         const widgetContainer = document.getElementById("widgetContainer");
         const alertFrame = document.getElementById("alertFrame");
 
-        // Priorität: Gewitter schlägt Wind (zeigt Radar & Blitze)
         if (hasThunderAlert) {
           widgetContainer.style.display = "none";
           alertFrame.style.display = "block";
