@@ -68,4 +68,47 @@
         let hasThunderAlert = false;
 
         if (data && data.features) {
-          for (const item of data
+          for (const item of data.features) {
+            const props = item.properties;
+            if (props.WARNCELLID == warnCellId || props.NAME === "Gemeinde Uplengen") {
+              const event = (props.EVENT || "").toLowerCase();
+              const level = parseInt(props.LEVEL || "0");
+              const isLevel2OrHigher = level >= 2 || ["Moderate", "Severe", "Extreme"].includes(props.SEVERITY);
+
+              if (isLevel2OrHigher) {
+                if (event.includes("gewitter") || event.includes("blitz") || event.includes("hagel") || event.includes("unwetter")) {
+                  hasThunderAlert = true;
+                }
+                if (event.includes("wind") || event.includes("sturm") || event.includes("böen") || event.includes("orkan")) {
+                  hasWindAlert = true;
+                }
+              }
+            }
+          }
+        }
+
+        const widgetContainer = document.getElementById("widgetContainer");
+        const alertFrame = document.getElementById("alertFrame");
+
+        if (hasThunderAlert) {
+          widgetContainer.style.display = "none";
+          alertFrame.style.display = "block";
+          if (alertFrame.src !== urlLightning) alertFrame.src = urlLightning;
+        } else if (hasWindAlert) {
+          widgetContainer.style.display = "none";
+          alertFrame.style.display = "block";
+          if (alertFrame.src !== urlWind) alertFrame.src = urlWind;
+        } else {
+          alertFrame.style.display = "none";
+          widgetContainer.style.display = "block";
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    checkWeatherAlert();
+    setInterval(checkWeatherAlert, 3 * 60 * 1000);
+  </script>
+</body>
+</html>
